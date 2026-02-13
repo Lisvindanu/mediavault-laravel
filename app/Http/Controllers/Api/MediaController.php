@@ -56,12 +56,15 @@ class MediaController extends Controller
             // Process incoming media items
             foreach ($request->media_items as $mediaData) {
                 try {
-                    Media::updateOrCreate(
-                        [
-                            'id' => $mediaData['id'],
-                            'user_id' => $user->id,
-                        ],
-                        [
+                    // Generate URL hash for duplicate detection
+                    $urlHash = hash('sha256', $user->id . '|' . $mediaData['url']);
+                    
+                    // Check if media exists by url_hash
+                    $existingMedia = Media::where('url_hash', $urlHash)->first();
+                    
+                    if ($existingMedia) {
+                        // Update existing media (keep existing ID)
+                        $existingMedia->update([
                             'url' => $mediaData['url'],
                             'title' => $mediaData['title'],
                             'description' => $mediaData['description'] ?? null,
@@ -73,8 +76,26 @@ class MediaController extends Controller
                             'tags' => $mediaData['tags'] ?? [],
                             'is_favorite' => $mediaData['is_favorite'],
                             'playback_speed' => $mediaData['playback_speed'],
-                        ]
-                    );
+                        ]);
+                    } else {
+                        // Create new media with client-provided ID
+                        Media::create([
+                            'id' => $mediaData['id'],
+                            'user_id' => $user->id,
+                            'url' => $mediaData['url'],
+                            'url_hash' => $urlHash,
+                            'title' => $mediaData['title'],
+                            'description' => $mediaData['description'] ?? null,
+                            'thumbnail_url' => $mediaData['thumbnail_url'] ?? null,
+                            'duration_seconds' => $mediaData['duration_seconds'],
+                            'category' => $mediaData['category'],
+                            'source_platform' => $mediaData['source_platform'],
+                            'quality' => $mediaData['quality'] ?? null,
+                            'tags' => $mediaData['tags'] ?? [],
+                            'is_favorite' => $mediaData['is_favorite'],
+                            'playback_speed' => $mediaData['playback_speed'],
+                        ]);
+                    }
                     $syncedCount++;
                 } catch (\Exception $e) {
                     $failedCount++;

@@ -17,8 +17,10 @@ class Media extends Model
     protected $table = 'media';
 
     protected $fillable = [
+        'id',
         'user_id',
         'url',
+        'url_hash',
         'title',
         'description',
         'thumbnail_url',
@@ -54,5 +56,19 @@ class Media extends Model
     public function watchHistory(): HasMany
     {
         return $this->hasMany(WatchHistory::class);
+    }
+    
+    /**
+     * Generate a new UUID for the model, but only if id is not already set
+     */
+    public function newUniqueId(): string
+    {
+        // If id is already set (from client), use it
+        if (isset($this->attributes['id'])) {
+            return $this->attributes['id'];
+        }
+        
+        // Otherwise generate new UUID
+        return (string) \Illuminate\Support\Str::uuid();
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\PlaylistController;
+use App\Http\Controllers\Api\YouTubeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,4 +45,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Analytics
     Route::get('/analytics/summary', [AnalyticsController::class, 'summary']);
+    
+    // YouTube API Proxy
+    Route::prefix('youtube')->group(function () {
+        Route::get('/search', [YouTubeController::class, 'search']);
+        Route::get('/trending', [YouTubeController::class, 'trending']);
+        Route::get('/video/{id}', [YouTubeController::class, 'video']);
+        Route::get('/stream/{id}', [YouTubeController::class, 'stream']);
+        Route::get('/proxy/{id}', [YouTubeController::class, 'proxy']);
+        Route::get('/channel/{id}', [YouTubeController::class, 'channel']);
+        Route::get('/comments/{id}', [YouTubeController::class, 'comments']);
+    });
 });
